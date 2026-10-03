@@ -1,5 +1,8 @@
 # Lightbox
 
+[![Claude Code 2.1.288+](https://img.shields.io/badge/Claude%20Code-2.1.288%2B-d97757)](https://code.claude.com)
+[![License: MIT](https://img.shields.io/github/license/arihantbansal/claude-lightbox)](LICENSE)
+
 Lightbox is a Claude Code mod that shows the images you paste into the prompt as large previews.
 
 ## How it works
@@ -25,7 +28,7 @@ To turn captions off, set the caption model to `off`.
 
 ## Requirements
 
-- Claude Code 2.1.288 or later. The mods API is in early access and may change between releases.
+- Claude Code 2.1.288 or later. The mods API is in early access, and Lightbox reads pasted images from a cache folder that isn't a public API, so a Claude Code update can break it.
 - A terminal that supports the kitty graphics protocol, such as Ghostty or kitty. Previews don't render inside tmux.
 - macOS or Linux.
 
@@ -48,11 +51,14 @@ Both settings are in `/config`.
 | Collapsed view | `thumbnails`, `none` | `thumbnails` | What stays above the prompt while you type |
 | Caption model | `sonnet`, `haiku`, `off` | `sonnet` | The model that writes captions, or `off` for none |
 
-## Limitations
+## What it accesses
 
-- Lightbox reads images from the folder where Claude Code caches pastes. That folder isn't a public API, so a Claude Code update can break it.
-- In fullscreen mode, Claude Code gives the area above the prompt at most half the terminal's height, which limits the preview's size.
-- The Claude desktop app previews pasted images itself, so Lightbox draws only in the terminal.
+- Reads the session's pasted images from Claude Code's cache folder under `/tmp/claude-<uid>`, or `CLAUDE_CODE_TMPDIR` when it's set.
+- Runs `od` to read each image's dimensions and `id -u` to find the cache folder.
+- Runs `claude -p` once per image to write its caption, which sends the image to Anthropic on your Claude Code account. Setting the caption model to `off` stops this.
+- Reads the prompt you're typing to find `[Image #n]` tags. It never changes the prompt.
+
+Run `claude plugin validate .claude-plugin/plugin.json` in a clone to list every event Lightbox hooks and every call it makes.
 
 ## Development
 

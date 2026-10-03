@@ -22,22 +22,25 @@ const THUMBNAIL_ROWS = 6
 const THUMBNAIL_MAX_COLUMNS = 30
 
 /**
- * Thumbnails for one row, all the same height and each its own width,
- * shrunk together until the row fits `columns` once each tile's `extra`
- * columns (border, gap) are added. At one row tall they stop shrinking and
- * the band clips what's left.
+ * A thumbnail for each image in one row, all the same height and each its
+ * own width, shrunk together until the row fits `bounds.columns` with
+ * `tileColumns` more per tile for its border and gap. At one row tall they
+ * stop shrinking and the band clips what's left.
  */
-export function fitThumbnails(
-  sizes: readonly Size[],
+export function fitThumbnails<T extends Size>(
+  images: readonly T[],
   bounds: Cells,
-  extra: number,
-): Cells[] {
-  const tiles = (rows: number) =>
-    sizes.map(size => fitImage(size, { columns: THUMBNAIL_MAX_COLUMNS, rows }))
-  const width = (row: Cells[]) =>
-    row.reduce((total, cells) => total + cells.columns + extra, 0)
+  tileColumns: number,
+): { image: T; cells: Cells }[] {
+  const row = (rows: number) =>
+    images.map(image => ({
+      image,
+      cells: fitImage(image, { columns: THUMBNAIL_MAX_COLUMNS, rows }),
+    }))
+  const width = (tiles: { cells: Cells }[]) =>
+    tiles.reduce((total, { cells }) => total + cells.columns + tileColumns, 0)
 
   let rows = Math.max(Math.min(THUMBNAIL_ROWS, bounds.rows), 1)
-  while (rows > 1 && width(tiles(rows)) > bounds.columns) rows -= 1
-  return tiles(rows)
+  while (rows > 1 && width(row(rows)) > bounds.columns) rows -= 1
+  return row(rows)
 }

@@ -63,33 +63,28 @@ export function thumbnails(
   )
   return (
     <Box columnGap={GAP}>
-      {images.map((image, i) => {
-        const cells = tiles[i] ?? { columns: 1, rows: 1 }
-        return (
-          <Box
-            key={`tile-${image.n}`}
-            flexDirection="column"
-            alignItems="center"
-            borderStyle="round"
-            borderDimColor
-          >
-            <Image
-              key={`thumbnail-${image.n}`}
-              source={{ file: image.path, format: 'png' }}
-              columns={cells.columns}
-              rows={cells.rows}
-              alt={`[Image #${image.n}]`}
-            />
-            <Box width={cells.columns}>
-              <Text dimColor wrap="truncate-end">
-                {[`#${image.n}`, captions.get(image.n)]
-                  .filter(Boolean)
-                  .join(' ')}
-              </Text>
-            </Box>
+      {tiles.map(({ image, cells }) => (
+        <Box
+          key={`tile-${image.n}`}
+          flexDirection="column"
+          alignItems="center"
+          borderStyle="round"
+          borderDimColor
+        >
+          <Image
+            key={`thumbnail-${image.n}`}
+            source={{ file: image.path, format: 'png' }}
+            columns={cells.columns}
+            rows={cells.rows}
+            alt={`[Image #${image.n}]`}
+          />
+          <Box width={cells.columns}>
+            <Text dimColor wrap="truncate-end">
+              {[`#${image.n}`, captions.get(image.n)].filter(Boolean).join(' ')}
+            </Text>
           </Box>
-        )
-      })}
+        </Box>
+      ))}
     </Box>
   )
 }

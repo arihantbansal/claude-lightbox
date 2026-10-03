@@ -39,14 +39,21 @@ let isSyncing = false
 // the directory the session started in, which may not be the current one, so
 // it is found by the session id instead.
 let found: { sessionId: string; path: string } | undefined
-// A cached file never changes, so each is read once; null marks one that
-// exists but isn't a readable PNG, so it isn't read again.
-const readImages = new Map<string, PastedImage | null>()
+// A cached file never changes, so each is read once, an unreadable one too.
+const readImages = new Map<string, Exclude<ImageRead, { kind: 'missing' }>>()
 
 let captionModel: CaptionModel | null = null
-// Image paths waiting for a caption run, oldest first; runs go one at a time.
-const captionQueue: string[] = []
+// Images waiting for a caption run, oldest first; runs go one at a time.
+const captionQueue: { path: string; model: CaptionModel }[] = []
 let isCaptioning = false
+
+/** What reading a cached image found. */
+type ImageRead =
+  | { kind: 'found'; image: PastedImage }
+  // There, but not a PNG this can read.
+  | { kind: 'unreadable' }
+  // Not written yet, so the next poll looks again.
+  | { kind: 'missing' }
 
 export const register: Register = (on, options) => {
   const showsThumbnails = options.collapsedView !== 'none'
@@ -140,7 +147,8 @@ async function apply($: EngineInterface, box: PromptBox) {
 }
 
 async function queueCaptions($: EngineInterface, images: PastedImage[]) {
-  if (captionModel === null) return
+  const model = captionModel
+  if (model === null) return
   const known = await read($, captions)
   const paths = images
     .map(image => image.path)
@@ -151,7 +159,7 @@ async function queueCaptions($: EngineInterface, images: PastedImage[]) {
     for (const path of paths) next[path] = { status: 'pending' }
     return next
   })
-  captionQueue.push(...paths)
+  captionQueue.push(...paths.map(path => ({ path, model })))
   void runCaptions($)
 }
 
@@ -161,8 +169,9 @@ async function runCaptions($: EngineInterface) {
   if (isCaptioning) return
   isCaptioning = true
   try {
-    for (let path = captionQueue.shift(); path; path = captionQueue.shift()) {
-      const caption = await captionImage($, path)
+    for (let job = captionQueue.shift(); job; job = captionQueue.shift()) {
+      const { path, model } = job
+      const caption = await captionImage($, path, model)
       await update($, captions, current => ({ ...current, [path]: caption }))
     }
   } catch (error) {
@@ -175,10 +184,10 @@ async function runCaptions($: EngineInterface) {
 async function captionImage(
   $: EngineInterface,
   path: string,
+  model: CaptionModel,
 ): Promise<Caption> {
-  if (captionModel === null) return { status: 'failed' }
   const slash = path.lastIndexOf('/')
-  const command = captionCommand(captionModel, path.slice(slash + 1))
+  const command = captionCommand(model, path.slice(slash + 1))
   const run = await $.process
     .run(command, { cwd: path.slice(0, slash), timeoutMs: CAPTION_TIMEOUT_MS })
     .catch((error: unknown) => ({
@@ -220,13 +229,14 @@ async function cachedImages(
   const images: PastedImage[] = []
   for (const n of numbers) {
     const path = `${dir}/${n}.png`
-    if (!readImages.has(path)) {
-      // undefined: not written yet, so the next call looks again.
-      const image = await readImage($, n, path)
-      if (image !== undefined) readImages.set(path, image)
+    let read = readImages.get(path)
+    if (read === undefined) {
+      const result = await readImage($, n, path)
+      if (result.kind === 'missing') continue
+      readImages.set(path, result)
+      read = result
     }
-    const image = readImages.get(path)
-    if (image) images.push(image)
+    if (read.kind === 'found') images.push(read.image)
   }
   return images
 }
@@ -257,10 +267,10 @@ async function readImage(
   $: EngineInterface,
   n: number,
   path: string,
-): Promise<PastedImage | null | undefined> {
+): Promise<ImageRead> {
   const stat = await $.fs.stat(path).catch(() => undefined)
-  if (stat === undefined) return undefined
-  if (stat.kind !== 'file') return null
+  if (stat === undefined) return { kind: 'missing' }
+  if (stat.kind !== 'file') return { kind: 'unreadable' }
   // The header alone, so a large screenshot isn't copied in to read 24 bytes.
   const { exitCode, stdout } = await $.process.run([
     'od',
@@ -270,5 +280,6 @@ async function readImage(
     path,
   ])
   const size = exitCode === 0 ? pngSize(parseOd(stdout)) : null
-  return size ? { n, path, ...size, bytes: stat.size } : null
+  if (size === null) return { kind: 'unreadable' }
+  return { kind: 'found', image: { n, path, ...size, bytes: stat.size } }
 }

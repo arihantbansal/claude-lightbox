@@ -30,12 +30,16 @@ describe('fit', () => {
 
   test('thumbnails shrink together until the row fits', () => {
     // Three 6-row squares take 3 * (12 + 3) = 45 columns; 5 rows take 39.
-    expect(
-      fitThumbnails([square, square, square], { columns: 40, rows: 6 }, 3),
-    ).toEqual([
+    const tiles = fitThumbnails(
+      [square, square, square],
+      { columns: 40, rows: 6 },
+      3,
+    )
+    expect(tiles.map(tile => tile.cells)).toEqual([
       { columns: 10, rows: 5 },
       { columns: 10, rows: 5 },
       { columns: 10, rows: 5 },
     ])
+    expect(tiles[0]?.image).toBe(square)
   })
 })
