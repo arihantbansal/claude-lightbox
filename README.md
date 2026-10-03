@@ -5,6 +5,8 @@
 
 Lightbox is a Claude Code mod that shows the images you paste into the prompt as large previews.
 
+![A pasted candlestick chart shown large above the Claude Code prompt, under its caption, size and token estimate](docs/expanded.png)
+
 ## How it works
 
 - Pasting an image opens a large preview of it above the prompt.
@@ -12,10 +14,13 @@ Lightbox is a Claude Code mod that shows the images you paste into the prompt as
 - Moving the cursor onto an `[Image #n]` tag, with the arrow keys or a click, opens that image again.
 - Sending the prompt clears the previews.
 
-A line above each preview describes the image and how the model will read it:
+![Three pasted images as captioned thumbnails above the prompt](docs/thumbnails.png)
+
+Two lines above each preview describe the image and how the model will read it:
 
 ```
-Image #3 · Login page with validation error · 2 of 3 · 2850×1672 · 1.1 MB · sent as 2520×1478 · ~4.8k tokens
+Image #3 · Login page with validation error
+2 of 3 · 2850×1672 · 1.1 MB · sent as 2520×1478 · ~4.8k tokens
 ```
 
 The "sent as" size appears when Claude will scale the image down before reading it. Lightbox computes that size and the token estimate for the session's model, using the resizing rules in Anthropic's [vision documentation](https://platform.claude.com/docs/en/build-with-claude/vision).
