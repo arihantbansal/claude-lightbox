@@ -1,0 +1,4 @@
+{
+  "description": "Draws pasted images above the prompt, large when the cursor is on an image tag and as thumbnails otherwise",
+  "modules": ["./register.tsx"]
+}

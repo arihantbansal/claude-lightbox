@@ -1,0 +1,38 @@
+{
+  "name": "lightbox",
+  "description": "Large previews of pasted images above the Claude Code prompt, with captioned thumbnails while you type",
+  "version": "0.1.0",
+  "author": {
+    "name": "Arihant Bansal",
+    "url": "https://github.com/arihantbansal"
+  },
+  "homepage": "https://github.com/arihantbansal/claude-lightbox",
+  "repository": "https://github.com/arihantbansal/claude-lightbox",
+  "license": "MIT",
+  "keywords": [
+    "images",
+    "paste",
+    "preview",
+    "thumbnails",
+    "mod",
+    "terminal",
+    "claude-code"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "collapsedView": {
+      "type": "string",
+      "title": "Collapsed view",
+      "description": "Show thumbnails of the pasted images above the prompt while you type, or nothing",
+      "default": "thumbnails",
+      "options": ["thumbnails", "none"]
+    },
+    "captionModel": {
+      "type": "string",
+      "title": "Caption model",
+      "description": "The model that writes a short caption for each pasted image, or off for no captions",
+      "default": "sonnet",
+      "options": ["sonnet", "haiku", "off"]
+    }
+  }
+}

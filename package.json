@@ -1,0 +1,22 @@
+{
+  "name": "claude-lightbox",
+  "description": "Large previews of the images you paste into Claude Code",
+  "author": "Arihant Bansal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arihantbansal/claude-lightbox.git"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "biome check . && tsc -p . && claude plugin validate . && claude plugin validate .claude-plugin/plugin.json && claude plugin test .",
+    "fix": "biome check --write .",
+    "typecheck": "tsc -p .",
+    "test": "claude plugin test ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "typescript": "7.0.2"
+  }
+}

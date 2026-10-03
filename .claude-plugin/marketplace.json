@@ -1,0 +1,19 @@
+{
+  "name": "claude-lightbox",
+  "owner": {
+    "name": "Arihant Bansal",
+    "url": "https://github.com/arihantbansal"
+  },
+  "plugins": [
+    {
+      "name": "lightbox",
+      "source": "./",
+      "description": "Large previews of pasted images above the Claude Code prompt, with captioned thumbnails while you type",
+      "category": "productivity",
+      "tags": ["images", "paste", "preview", "thumbnails", "mod", "terminal"]
+    }
+  ],
+  "metadata": {
+    "description": "Lightbox, a Claude Code mod that previews pasted images"
+  }
+}
