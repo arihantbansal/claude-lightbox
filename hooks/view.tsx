@@ -2,6 +2,7 @@ import type { Elements, RenderElement } from 'claude-code'
 
 import type { PastedImage } from '../types'
 import { fitImage, fitThumbnails } from './fit'
+import type { Header } from './header'
 
 type Ui = Elements['terminal']
 type Band = { columns: number; rows: number }
@@ -9,16 +10,22 @@ type Band = { columns: number; rows: number }
 // A rounded border takes a cell on every side.
 const BORDER = 2
 
-/** One image as large as the band allows, under a line about it. */
+// The header's title and details lines.
+const HEADER_ROWS = 2
+
+/**
+ * One image as large as the band allows, under its header, in a frame as
+ * wide as the wider of the two.
+ */
 export function expanded(
   { Box, Image, Text }: Ui,
   image: PastedImage,
-  header: string,
+  { title, details }: Header,
   band: Band,
 ): RenderElement {
   const cells = fitImage(image, {
     columns: band.columns - BORDER - 2,
-    rows: band.rows - BORDER - 1,
+    rows: band.rows - BORDER - HEADER_ROWS,
   })
   return (
     <Box width={band.columns} justifyContent="center">
@@ -29,8 +36,11 @@ export function expanded(
         borderStyle="round"
         borderDimColor
       >
+        <Text bold wrap="truncate-end">
+          {title}
+        </Text>
         <Text dimColor wrap="truncate-end">
-          {header}
+          {details}
         </Text>
         <Image
           key={`image-${image.n}`}
@@ -47,8 +57,9 @@ export function expanded(
 const GAP = 1
 
 /**
- * Every image small, in one row, each over its tag's number and caption, cut
- * to the tile's width.
+ * Every image small, in one row of tiles of equal height: each picture
+ * centered in its tile, over its tag's number and caption cut to its width,
+ * so the labels line up.
  */
 export function thumbnails(
   { Box, Image, Text }: Ui,
@@ -71,13 +82,15 @@ export function thumbnails(
           borderStyle="round"
           borderDimColor
         >
-          <Image
-            key={`thumbnail-${image.n}`}
-            source={{ file: image.path, format: 'png' }}
-            columns={cells.columns}
-            rows={cells.rows}
-            alt={`[Image #${image.n}]`}
-          />
+          <Box flexGrow={1} alignItems="center">
+            <Image
+              key={`thumbnail-${image.n}`}
+              source={{ file: image.path, format: 'png' }}
+              columns={cells.columns}
+              rows={cells.rows}
+              alt={`[Image #${image.n}]`}
+            />
+          </Box>
           <Box width={cells.columns}>
             <Text dimColor wrap="truncate-end">
               {[`#${image.n}`, captions.get(image.n)].filter(Boolean).join(' ')}

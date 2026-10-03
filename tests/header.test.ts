@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { headerText } from '../hooks/header'
+import { header } from '../hooks/header'
 import { HIGH_RES, STANDARD } from '../hooks/tokens'
 
 const image = {
@@ -10,39 +10,36 @@ const image = {
   height: 1080,
   bytes: 524_288,
 }
+const alone = { index: 0, count: 1 }
 
 describe('header', () => {
-  test('names the image, its size and what the model reads', () => {
-    expect(headerText(image, undefined, { index: 0, count: 1 }, HIGH_RES)).toBe(
-      'Image #2 · 1920×1080 · 512 KB · ~2.7k tokens',
+  test('titles the image with its caption', () => {
+    expect(header(image, 'Login page with error', alone, HIGH_RES).title).toBe(
+      'Image #2 · Login page with error',
+    )
+    expect(header(image, undefined, alone, HIGH_RES).title).toBe('Image #2')
+  })
+
+  test('gives its size and what the model reads', () => {
+    expect(header(image, undefined, alone, HIGH_RES).details).toBe(
+      '1920×1080 · 512 KB · ~2.7k tokens',
     )
   })
 
   test('says where the image sits among several', () => {
-    expect(
-      headerText(image, undefined, { index: 1, count: 3 }, HIGH_RES),
-    ).toContain('Image #2 · 2 of 3 ·')
+    const { details } = header(
+      image,
+      undefined,
+      { index: 1, count: 3 },
+      HIGH_RES,
+    )
+    expect(details).toMatch(/^2 of 3 · /)
   })
 
   test('says what size it is sent at when the model scales it down', () => {
-    expect(
-      headerText(
-        { ...image, bytes: 1_153_434 },
-        undefined,
-        { index: 0, count: 1 },
-        STANDARD,
-      ),
-    ).toBe('Image #2 · 1920×1080 · 1.1 MB · sent as 1456×819 · ~1.6k tokens')
-  })
-
-  test('puts the caption right after the image number', () => {
-    expect(
-      headerText(
-        image,
-        'Login page with error',
-        { index: 0, count: 1 },
-        HIGH_RES,
-      ),
-    ).toMatch(/^Image #2 · Login page with error · 1920×1080/)
+    const big = { ...image, bytes: 1_153_434 }
+    expect(header(big, undefined, alone, STANDARD).details).toBe(
+      '1920×1080 · 1.1 MB · sent as 1456×819 · ~1.6k tokens',
+    )
   })
 })

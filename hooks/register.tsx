@@ -9,7 +9,7 @@ import {
   captionModelOf,
   cleanCaption,
 } from './captions'
-import { headerText } from './header'
+import { header } from './header'
 import { parseOd, pngSize } from './png'
 import { findTags, imageNumbers, tagAtCursor } from './tags'
 import { tierOf } from './tokens'
@@ -92,8 +92,7 @@ export const register: Register = (on, options) => {
       const tier = tierOf(await $.session.model())
       const caption = captionLabel(byPath[image.path])
       const position = { index, count: images.length }
-      const header = headerText(image, caption, position, tier)
-      return expanded(ui, image, header, band)
+      return expanded(ui, image, header(image, caption, position, tier), band)
     }
     if (showsThumbnails && images.length > 0) {
       const labels = new Map<number, string>()

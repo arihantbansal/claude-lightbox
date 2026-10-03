@@ -109,7 +109,7 @@ describe('register', () => {
       source: { file: `${IMAGES}/1.png`, format: 'png' },
     })
     expect(
-      await ui.find({ type: 'Text', text: /^Image #1 · .* · 1920×1080/ }),
+      await ui.find({ type: 'Text', text: /^1920×1080 · 512 KB/ }),
     ).toBeDefined()
   })
 
@@ -129,7 +129,7 @@ describe('register', () => {
     ui = await $.ui.mount(BAND)
     expect(await ui.find({ key: 'image-2' })).toBeDefined()
     expect(
-      await ui.find({ type: 'Text', text: /^Image #2 · .* · 2 of 2/ }),
+      await ui.find({ type: 'Text', text: /^2 of 2 · 1920×1080/ }),
     ).toBeDefined()
   })
 
@@ -180,7 +180,7 @@ describe('register', () => {
 
     let ui = await $.ui.mount(BAND)
     expect(
-      await ui.find({ type: 'Text', text: /^Image #1 · describing… · / }),
+      await ui.find({ type: 'Text', text: 'Image #1 · describing…' }),
     ).toBeDefined()
     await ui.unmount()
 
@@ -196,7 +196,7 @@ describe('register', () => {
     expect(
       await ui.find({
         type: 'Text',
-        text: /^Image #1 · Login page with error · /,
+        text: 'Image #1 · Login page with error',
       }),
     ).toBeDefined()
   })
@@ -222,9 +222,7 @@ describe('register', () => {
     await settle()
 
     const ui = await $.ui.mount(BAND)
-    expect(
-      await ui.find({ type: 'Text', text: /^Image #1 · 1920×1080/ }),
-    ).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^Image #1$/ })).toBeDefined()
   })
 
   test('each image is captioned once', async ($, on) => {
@@ -253,9 +251,7 @@ describe('register', () => {
 
       expect(captionRuns).toHaveLength(0)
       const ui = await $.ui.mount(BAND)
-      expect(
-        await ui.find({ type: 'Text', text: /^Image #1 · 1920×1080/ }),
-      ).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /^Image #1$/ })).toBeDefined()
     },
   )
 })
